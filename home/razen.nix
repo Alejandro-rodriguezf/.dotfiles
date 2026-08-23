@@ -16,7 +16,7 @@
     programs.git = {
         enable = true;
         userName = "Alejandro-rodriguezf";
-        userEmail = "alex.ro.fr@gmail.com";
+        userEmail = "alejandro.rodriguezf@udc.es";
     };
 
   # Home Manager state version
