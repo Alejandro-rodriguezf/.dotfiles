@@ -67,7 +67,16 @@
     description = "Alex";
     extraGroups = [ "networkmanager" "wheel" ];
   };
-  
+
+  # ============================================================================
+  # KEYBOARD LAYOUT
+  # ============================================================================
+  services.xserver.xkb = {
+    layout = "es";
+    variant = "";
+  };
+  console.keyMap = "es";
+    
   # ============================================================================
   # PLASMA DESKTOP ENVIRONMENT
   # ============================================================================
@@ -75,14 +84,8 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
-  services.xserver.xkb = {
-    layout = "es";
-    variant = "";
-  };
-  console.keyMap = "es";
-
   # ============================================================================
-  # HYPRLAND & WAYLAND WINDOW MANAGER
+  # HYPRLAND WINDOW MANAGER
   # ============================================================================
   programs.hyprland = {
     enable = true;

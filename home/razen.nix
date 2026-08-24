@@ -1,11 +1,12 @@
-{ config, pkgs, ... }:
+{ config, pkgs, quickshell, zen-browser, ... }:
 
 {
-    # User metadata
+  # ============================================================================
+  # USER METADATA & SPECIFIC PACKAGES
+  # ============================================================================
     home.username = "razen";
     home.homeDirectory = "/home/razen";
 
-    # User specific packages
     home.packages = with pkgs; [
         kdePackages.kate
         vscode
@@ -17,18 +18,34 @@
         waybar          # Top bar (Temporary)
         dunst           # Notifications daemon
         hyprpaper       # Wallpaper manager
+
+        # Quickshell widget framework
+        quickshell.packages.${pkgs.system}.default
+
+
+        zen-browser.packages.${pkgs.system}.default
     ];
 
-    # Git configuration
+  xdg.configFile = {
+    "hypr".source = ./config/hypr;
+    "waybar".source = ./config/waybar;
+    "rofi".source = ./config/rofi;
+    "kitty".source = ./config/kitty;
+  };
+
+
+  # ============================================================================
+  # GIT CONFIGURATION
+  # ============================================================================
     programs.git = {
         enable = true;
         userName = "Alejandro-rodriguezf";
         userEmail = "alejandro.rodriguezf@udc.es";
     };
 
-  # Home Manager state version
+  # ============================================================================
+  # HOME MANAGER
+  # ============================================================================
   home.stateVersion = "26.05";
-
-  # Allow Home Manager to manage itself
   programs.home-manager.enable = true;
 }
