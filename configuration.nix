@@ -69,7 +69,7 @@
   };
   
   # ============================================================================
-  # DESKTOP ENVIRONMENT
+  # PLASMA DESKTOP ENVIRONMENT
   # ============================================================================
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
@@ -80,6 +80,25 @@
     variant = "";
   };
   console.keyMap = "es";
+
+  # ============================================================================
+  # HYPRLAND & WAYLAND WINDOW MANAGER
+  # ============================================================================
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+  };
+
+  # Enable XDG Desktop Portals (Screenshots, file selection...)
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  };
+
+  # Recommended environment variables for Qt/GTK apps in Wayland
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1"; # Makes Electron apps use native Wayland (Spotify, VSCode...) 
+  };
 
   # ============================================================================
   # HARDWARE & AUDIO

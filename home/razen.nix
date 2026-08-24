@@ -10,6 +10,13 @@
         kdePackages.kate
         vscode
         firefox
+
+        # Hyprland essentials & Wayland tools
+        kitty           # Terminal
+        rofi-wayland    # App launcher
+        waybar          # Top bar (Temporary)
+        dunst           # Notifications daemon
+        hyprpaper       # Wallpaper manager
     ];
 
     # Git configuration
