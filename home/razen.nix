@@ -13,7 +13,7 @@
 
         # Hyprland essentials & Wayland tools
         kitty           # Terminal
-        rofi-wayland    # App launcher
+        rofi            # App launcher
         waybar          # Top bar (Temporary)
         dunst           # Notifications daemon
         hyprpaper       # Wallpaper manager
