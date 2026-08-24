@@ -27,6 +27,18 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # ============================================================================
+  # FILE SYSTEMS & SHARED PARTITIONS
+  # ============================================================================
+  fileSystems."/mnt/Universidad" = {
+    device = "/dev/disk/by-uuid/64af9e62-e836-4c64-a4ef-b69b956787eb";
+    fsType = "ext4";
+    options = [
+      "defaults" # Opciones estándar de lectura/escritura
+      "nofail"   # Si la partición falla o el disco no está conectado, el sistema arranca igual sin quedarse colgado
+    ];
+  };
+
+  # ============================================================================
   # NETWORK & LOCALIZATION
   # ============================================================================
   networking.hostName = "nixos";
