@@ -118,13 +118,53 @@
   };
 
   # ============================================================================
+  # NVIDIA DRIVERS CONFIGURATION
+  # ============================================================================
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+  services.xserver.videoDrivers = [ "nvidia" ];
+
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+
+    # Serie GTX 1650 (Turing) needs propietary drivers (open = false)
+    open = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+    prime = {
+      # Force Sync instead of Offload: Run directly on the NVIDIA GPU
+      sync.enable = true;
+
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
+  };
+
+  # ============================================================================
+  # FONTS CONFIGURATION
+  # ============================================================================
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.symbols-only
+    font-awesome
+  ];
+
+  # ============================================================================
   # SYSTEM PACKAGES & NIX SETTINGS
   # ============================================================================
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  programs.skwd-wall.enable = true;
+
   environment.systemPackages = with pkgs; [
-    git
+    git6
     os-prober
     ntfs3g
   ];

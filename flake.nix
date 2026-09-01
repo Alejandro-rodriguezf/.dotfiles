@@ -12,6 +12,9 @@
             inputs.nixpkgs.follows = "nixpkgs"; # Home Manager will use same version as system for nixpkgs
         };
 
+        # Wallpaper Manager: skwd-wall
+        skwd-wall.url = "github:liixini/skwd-wall";
+
         # Quickshell
         quickshell = {
             url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
@@ -23,10 +26,16 @@
             url = "github:0xc000022070/zen-browser-flake";
             inputs.nixpkgs.follows = "nixpkgs";
         };
+
+        # Serpantinum Shell
+        serpantinum = {
+            url = "github:ilyamiro/serpantinum";
+            inputs.nixpkgs.follows = "nixpkgs";
+        };
     };
 
     # OUTPUTS: Built from inputs.
-    outputs = {self, nixpkgs, home-manager, quickshell, zen-browser, ...}@inputs: {
+    outputs = { self, nixpkgs, home-manager, quickshell, zen-browser, skwd-wall, serpantinum, ... }@inputs: {
 
         nixosConfigurations = {
 
@@ -34,17 +43,20 @@
                 system = "x86_64-linux";
                 modules = [
                     ./configuration.nix
+                    skwd-wall.nixosModules.default
+                    serpantinum.nixosModules.default # Habilita prerrequisitos del sistema
 
                     home-manager.nixosModules.home-manager
                     {
-                        home-manager.useGlobalPkgs = true; # Uses packages installed on system level
-                        home-manager.useUserPackages = true; # Installs user packages in /etc/profiles
-                        home-manager.backupFileExtension = "backup"; # Creates backups from conflicts (.backup)
-                        home-manager.extraSpecialArgs = { inherit quickshell zen-browser; };                        home-manager.users.razen = import ./home/razen.nix; # razen config file
+                        home-manager.useGlobalPkgs = true;
+                        home-manager.useUserPackages = true;
+                        home-manager.backupFileExtension = "backup";
+                        # Pasamos serpantinum a los argumentos de Home Manager
+                        home-manager.extraSpecialArgs = { inherit quickshell zen-browser serpantinum; };                        
+                        home-manager.users.razen = import ./home/razen.nix;
                     }
                 ];
             };
         };
     };
-
 }
