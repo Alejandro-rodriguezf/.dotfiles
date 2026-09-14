@@ -12,9 +12,6 @@
             inputs.nixpkgs.follows = "nixpkgs"; # Home Manager will use same version as system for nixpkgs
         };
 
-        # Wallpaper Manager: skwd-wall
-        skwd-wall.url = "github:liixini/skwd-wall";
-
         # Quickshell
         quickshell = {
             url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
@@ -35,15 +32,16 @@
     };
 
     # OUTPUTS: Built from inputs.
-    outputs = { self, nixpkgs, home-manager, quickshell, zen-browser, skwd-wall, serpantinum, ... }@inputs: {
+    outputs = { self, nixpkgs, home-manager, quickshell, zen-browser, serpantinum, ... }@inputs: {
 
         nixosConfigurations = {
 
             nixos = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
+                # Le pasamos serpantinum a configuration.nix para poder empaquetar su tema de SDDM
+                specialArgs = { inherit serpantinum; };
                 modules = [
                     ./configuration.nix
-                    skwd-wall.nixosModules.default
                     serpantinum.nixosModules.default # Habilita prerrequisitos del sistema
 
                     home-manager.nixosModules.home-manager

@@ -1,5 +1,19 @@
-{ config, pkgs, ... }:
+{ config, pkgs, serpantinum, ... }:
 
+let
+  # Serpantinum ships its own SDDM greeter theme (config/sddm/themes/material-you in its repo),
+  # normally deployed by its Arch install.sh. We package it ourselves here for NixOS.
+  serpantinumSddmTheme = pkgs.stdenvNoCC.mkDerivation {
+    pname = "serpantinum-sddm-theme";
+    version = "1.0";
+    src = "${serpantinum}/config/sddm/themes/material-you";
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out/share/sddm/themes/material-you
+      cp -r . $out/share/sddm/themes/material-you/
+    '';
+  };
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -82,6 +96,9 @@
   # ============================================================================
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
+  # Serpantinum's own login screen theme (matches its Arch install.sh behavior)
+  services.displayManager.sddm.theme = "material-you";
+  services.displayManager.sddm.extraPackages = [ serpantinumSddmTheme ];
   services.desktopManager.plasma6.enable = true;
 
   # ============================================================================
@@ -92,10 +109,10 @@
     xwayland.enable = true;
   };
 
-  # Enable XDG Desktop Portals (Screenshots, file selection...)
+  # Enable XDG Desktop Portals (Screenshots, file selection, screen share for Discord etc.)
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];
   };
 
   # Recommended environment variables for Qt/GTK apps in Wayland
@@ -161,12 +178,15 @@
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  programs.skwd-wall.enable = true;
+  # System-level prerequisites for Serpantinum (i2c for ddcutil brightness control,
+  # bluetooth/networkmanager/pipewire defaults, Iosevka Nerd Font for the shell icons)
+  programs.serpantinum.enable = true;
 
   environment.systemPackages = with pkgs; [
-    git6
+    git
     os-prober
     ntfs3g
+    serpantinumSddmTheme
   ];
 
   system.stateVersion = "26.05";

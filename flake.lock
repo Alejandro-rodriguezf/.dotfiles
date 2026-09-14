@@ -57,53 +57,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1787498568,
-        "narHash": "sha256-9i/VTdusq/+NM/tz+J1Re+ojkMB8MBf0QshnYfzHz30=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "56c02bc00adcf003215cc4bd996d6efaf4cff188",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_3": {
-      "locked": {
-        "lastModified": 1768127708,
-        "narHash": "sha256-1Sm77VfZh3mU0F5OqKABNLWxOuDeHIlcFjsXeeiPazs=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "ffbc9f8cbaacfb331b6017d5a5abb21a492c9a38",
-        "type": "github"
-      },
-      "original": {
-        "id": "nixpkgs",
-        "ref": "nixos-unstable",
-        "type": "indirect"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
-        "lastModified": 1787498568,
-        "narHash": "sha256-9i/VTdusq/+NM/tz+J1Re+ojkMB8MBf0QshnYfzHz30=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "56c02bc00adcf003215cc4bd996d6efaf4cff188",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "quickshell": {
       "inputs": {
         "nixpkgs": [
@@ -124,68 +77,49 @@
         "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       }
     },
-    "quickshell_2": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
-      "locked": {
-        "lastModified": 1787649262,
-        "narHash": "sha256-YMyrzPIumghFExxPIgtKM6MZ0ysP7kHoWJ4Al9mKGtE=",
-        "owner": "quickshell-mirror",
-        "repo": "quickshell",
-        "rev": "15ea8e6f44a3783ebc4172a7b08ba02ad175dcde",
-        "type": "github"
-      },
-      "original": {
-        "owner": "quickshell-mirror",
-        "repo": "quickshell",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "quickshell": "quickshell",
-        "skwd-wall": "skwd-wall",
+        "serpantinum": "serpantinum",
         "zen-browser": "zen-browser"
       }
     },
-    "skwd-daemon": {
+    "serpantinum": {
       "inputs": {
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "serpantinum-wallpapers": "serpantinum-wallpapers"
       },
       "locked": {
-        "lastModified": 1787519816,
-        "narHash": "sha256-MqJbWqIJg33UZYbKJ04mpFiYVSCkmWnV2XeQl0yzdhk=",
-        "owner": "liixini",
-        "repo": "skwd-daemon",
-        "rev": "d5f46c462c2a5270a915a85cd68fc00e34c05c8e",
+        "lastModified": 1789372219,
+        "narHash": "sha256-q+NO3phlQjRM9ytjlaNXhOuik7dwgxuJqh7td5QvU7A=",
+        "owner": "ilyamiro",
+        "repo": "serpantinum",
+        "rev": "48620a5c7a86f0a73323a87c0b04e0200a54503a",
         "type": "github"
       },
       "original": {
-        "owner": "liixini",
-        "repo": "skwd-daemon",
+        "owner": "ilyamiro",
+        "repo": "serpantinum",
         "type": "github"
       }
     },
-    "skwd-wall": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2",
-        "quickshell": "quickshell_2",
-        "skwd-daemon": "skwd-daemon"
-      },
+    "serpantinum-wallpapers": {
+      "flake": false,
       "locked": {
-        "lastModified": 1787134573,
-        "narHash": "sha256-TZ1oFqgfGgwEfvWnb7xc8gW6GwHXmN5gLVVS3k5AgXA=",
-        "owner": "liixini",
-        "repo": "skwd-wall",
-        "rev": "49a2f5c0bdc711cde5b70f145ff659380954882a",
+        "lastModified": 1787675697,
+        "narHash": "sha256-ADvKHmQDsX50opqeiyEAB3uxUTjuCyDym0pGQCy7Sws=",
+        "owner": "ilyamiro",
+        "repo": "shell-wallpapers",
+        "rev": "1cb526443872fbf283a3f8305c3aa647545c02e4",
         "type": "github"
       },
       "original": {
-        "owner": "liixini",
-        "repo": "skwd-wall",
+        "owner": "ilyamiro",
+        "repo": "shell-wallpapers",
         "type": "github"
       }
     },

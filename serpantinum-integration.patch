@@ -1,0 +1,338 @@
+diff --git a/configuration.nix b/configuration.nix
+index 163a07d..6901d4c 100644
+--- a/configuration.nix
++++ b/configuration.nix
+@@ -1,5 +1,19 @@
+-{ config, pkgs, ... }:
+-
++{ config, pkgs, serpantinum, ... }:
++
++let
++  # Serpantinum ships its own SDDM greeter theme (config/sddm/themes/material-you in its repo),
++  # normally deployed by its Arch install.sh. We package it ourselves here for NixOS.
++  serpantinumSddmTheme = pkgs.stdenvNoCC.mkDerivation {
++    pname = "serpantinum-sddm-theme";
++    version = "1.0";
++    src = "${serpantinum}/config/sddm/themes/material-you";
++    dontBuild = true;
++    installPhase = ''
++      mkdir -p $out/share/sddm/themes/material-you
++      cp -r . $out/share/sddm/themes/material-you/
++    '';
++  };
++in
+ {
+   imports = [
+     ./hardware-configuration.nix
+@@ -82,6 +96,9 @@
+   # ============================================================================
+   services.xserver.enable = true;
+   services.displayManager.sddm.enable = true;
++  # Serpantinum's own login screen theme (matches its Arch install.sh behavior)
++  services.displayManager.sddm.theme = "material-you";
++  services.displayManager.sddm.extraPackages = [ serpantinumSddmTheme ];
+   services.desktopManager.plasma6.enable = true;
+ 
+   # ============================================================================
+@@ -92,10 +109,10 @@
+     xwayland.enable = true;
+   };
+ 
+-  # Enable XDG Desktop Portals (Screenshots, file selection...)
++  # Enable XDG Desktop Portals (Screenshots, file selection, screen share for Discord etc.)
+   xdg.portal = {
+     enable = true;
+-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
++    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];
+   };
+ 
+   # Recommended environment variables for Qt/GTK apps in Wayland
+@@ -161,12 +178,15 @@
+   nixpkgs.config.allowUnfree = true;
+   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+ 
+-  programs.skwd-wall.enable = true;
++  # System-level prerequisites for Serpantinum (i2c for ddcutil brightness control,
++  # bluetooth/networkmanager/pipewire defaults, Iosevka Nerd Font for the shell icons)
++  programs.serpantinum.enable = true;
+ 
+   environment.systemPackages = with pkgs; [
+-    git6
++    git
+     os-prober
+     ntfs3g
++    serpantinumSddmTheme
+   ];
+ 
+   system.stateVersion = "26.05";
+diff --git a/flake.nix b/flake.nix
+index fe5d20a..3f264d7 100644
+--- a/flake.nix
++++ b/flake.nix
+@@ -12,9 +12,6 @@
+             inputs.nixpkgs.follows = "nixpkgs"; # Home Manager will use same version as system for nixpkgs
+         };
+ 
+-        # Wallpaper Manager: skwd-wall
+-        skwd-wall.url = "github:liixini/skwd-wall";
+-
+         # Quickshell
+         quickshell = {
+             url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
+@@ -35,15 +32,16 @@
+     };
+ 
+     # OUTPUTS: Built from inputs.
+-    outputs = { self, nixpkgs, home-manager, quickshell, zen-browser, skwd-wall, serpantinum, ... }@inputs: {
++    outputs = { self, nixpkgs, home-manager, quickshell, zen-browser, serpantinum, ... }@inputs: {
+ 
+         nixosConfigurations = {
+ 
+             nixos = nixpkgs.lib.nixosSystem {
+                 system = "x86_64-linux";
++                # Le pasamos serpantinum a configuration.nix para poder empaquetar su tema de SDDM
++                specialArgs = { inherit serpantinum; };
+                 modules = [
+                     ./configuration.nix
+-                    skwd-wall.nixosModules.default
+                     serpantinum.nixosModules.default # Habilita prerrequisitos del sistema
+ 
+                     home-manager.nixosModules.home-manager
+diff --git a/home/config/hypr/hyprland.conf b/home/config/hypr/hyprland.conf
+index c81fdcd..810116c 100644
+--- a/home/config/hypr/hyprland.conf
++++ b/home/config/hypr/hyprland.conf
+@@ -1,25 +1,88 @@
+ # Teclado en español
+ input {
+     kb_layout = es
++    accel_profile = flat
++    touchpad {
++        natural_scroll = true
++        disable_while_typing = false
++    }
+ }
+ 
++# Window look & feel expected by Serpantinum's theme (rounding, blur, panel/window animations)
++general {
++    border_size = 0
++    gaps_in = 4
++    gaps_out = 6
++    resize_on_border = true
++    extend_border_grab_area = 30
++}
++
++decoration {
++    rounding = 12
++    active_opacity = 1.0
++    inactive_opacity = 1.0
++    blur {
++        enabled = true
++        size = 8
++        passes = 2
++        new_optimizations = true
++    }
++    shadow {
++        enabled = false
++    }
++}
++
++misc {
++    focus_on_activate = false
++    font_family = JetBrains Mono
++    disable_hyprland_logo = true
++    disable_splash_rendering = true
++}
++
++bezier = myBezier, 0.05, 0.9, 0.1, 1.05
++
++animation = windows, 1, 5, myBezier, popin 80%
++animation = windowsOut, 1, 5, myBezier, popin 80%
++animation = layers, 1, 5, myBezier, fade
++animation = layersIn, 1, 5, myBezier, fade
++animation = layersOut, 1, 5, myBezier, fade
++animation = fade, 1, 5, myBezier
++animation = workspaces, 1, 5, myBezier, slide
++animation = specialWorkspaceIn, 1, 5, myBezier, fade
++animation = specialWorkspaceOut, 1, 5, myBezier, fade
++
+ $mainMod = SUPER
+ $terminal = kitty
+ $fileManager = dolphin
+ $menu = rofi -show drun
+ 
++# Auto-config for any connected monitor (preferred resolution/refresh, auto position)
++# "auto" scale overshot (too big) - starting at 1.25 as a middle ground.
++# To live-test other values without rebuilding: hyprctl keyword monitor ",preferred,auto,VALUE"
++# Once you find one you like, put that VALUE here permanently.
++monitor = , preferred, auto, 1.25
++
+ # Autoarranque
+-exec-once = waybar & dunst & hyprpaper &
+-exec-once = systemctl --user start skwd-daemon.service
++# waybar/dunst/hyprpaper: replaced by Serpantinum's own bar, notifications and wallpaper engine
++# skwd-daemon.service: skwd-wall removed, Serpantinum now owns the wallpaper
++# Serpantinum starts itself via the "serpantinum" systemd --user service (programs.serpantinum.systemd.enable
++# in home/razen.nix), tied to graphical-session.target - no exec-once needed here.
++# If it doesn't come up on login (graphical-session.target not reached), uncomment this fallback:
++# exec-once = systemctl --user start serpantinum.service
++
++# Mic noise suppression for voice calls (Discord etc.)
++exec-once = systemctl --user enable --now easyeffects
+ 
+ # Atajos principales
+-bind = $mainMod, Q, exec, $terminal
++bind = $mainMod, RETURN, exec, $terminal
++bind = $mainMod, Q, exec, serpantinum reload
+ bind = $mainMod, R, exec, $menu
+-bind = $mainMod, C, killactive
+ bind = $mainMod, M, exit
+ bind = $mainMod, E, exec, $fileManager
+-bind = $mainMod, V, togglefloating
++bind = $mainMod SHIFT, F, togglefloating
+ bind = $mainMod, F, fullscreen
++bind = $mainMod, V, exec, serpantinum msg toggle volume
++bind = $mainMod, C, exec, serpantinum msg toggle clipboard
+ 
+ # Foco
+ bind = $mainMod, left, movefocus, l
+@@ -45,6 +108,16 @@ bind = $mainMod SHIFT, 5, movetoworkspace, 5
+ bindm = $mainMod, mouse:272, movewindow
+ bindm = $mainMod, mouse:273, resizewindow
+ 
++# Mover/redimensionar ventanas con teclado
++bind = $mainMod CTRL, left, movewindow, l
++bind = $mainMod CTRL, right, movewindow, r
++bind = $mainMod CTRL, up, movewindow, u
++bind = $mainMod CTRL, down, movewindow, d
++binde = $mainMod SHIFT, left, resizeactive, -50 0
++binde = $mainMod SHIFT, right, resizeactive, 50 0
++binde = $mainMod SHIFT, up, resizeactive, 0 -50
++binde = $mainMod SHIFT, down, resizeactive, 0 50
++
+ # Atajos para capturas de pantalla
+ # Print: Seleccionar área y abrir directamente en Satty para editar/guardar
+ bind = , Print, exec, grim -g "$(slurp)" - | satty --filename -
+@@ -56,4 +129,27 @@ bind = SHIFT, Print, exec, grim -g "$(slurp)" - | wl-copy
+ bind = CTRL, Print, exec, grim - | wl-copy
+ 
+ # Atajos para cambiar el fondo de pantalla
+-bind = $mainMod, W, exec, skwd-wall
+\ No newline at end of file
++bind = $mainMod, W, exec, serpantinum msg toggle wallpaper
++
++# Serpantinum shell shortcuts (missing before - the launcher/lock features exist but had no keybind)
++bind = $mainMod, D, exec, serpantinum msg toggle launcher   # App launcher - separate from rofi on SUPER+R, keep whichever you prefer
++bind = $mainMod, L, exec, serpantinum lock                  # Lock screen
++bind = , XF86PowerOff, exec, serpantinum lock                # Power button also locks
++bind = $mainMod, H, exec, serpantinum msg toggle guide       # Settings panel (theme/bar/launcher/idle/notifications tabs)
++bind = ALT, F4, killactive
++
++# Brightness - now works thanks to hardware.i2c enabled via programs.serpantinum.enable
++bind = , XF86MonBrightnessDown, exec, serpantinum brightness lower
++bind = , XF86MonBrightnessUp, exec, serpantinum brightness raise
++
++# Media & volume keys
++bind = $mainMod, SPACE, exec, playerctl play-pause
++bind = , XF86AudioPlay, exec, playerctl play-pause
++bind = , XF86AudioPause, exec, playerctl play-pause
++bind = , XF86AudioMicMute, exec, serpantinum volume mic-toggle
++bind = , XF86AudioMute, exec, serpantinum volume mute-toggle
++binde = , XF86AudioLowerVolume, exec, serpantinum volume lower
++binde = , XF86AudioRaiseVolume, exec, serpantinum volume raise
++
++# 3-finger swipe to switch workspaces (touchpad only, harmless if you don't have one)
++gesture = 3, horizontal, workspace
+\ No newline at end of file
+diff --git a/home/config/kitty/kitty.conf b/home/config/kitty/kitty.conf
+index e69de29..359baa1 100644
+--- a/home/config/kitty/kitty.conf
++++ b/home/config/kitty/kitty.conf
+@@ -0,0 +1,21 @@
++font_family      JetBrains Mono
++font_size        12.0
++bold_font        auto
++italic_font      auto
++bold_italic_font auto
++
++cursor_trail 1
++
++background_opacity 1.0
++confirm_os_window_close 0
++
++scrollback_lines 2000
++wheel_scroll_min_lines 1
++
++enable_audio_bell no
++hide_window_decorations yes
++
++window_padding_width 4
++
++# Colors generated by Serpantinum's Matugen theming (regenerated when you pick a new wallpaper)
++include ~/.config/kitty/colors.conf
+diff --git a/home/razen.nix b/home/razen.nix
+index 4c856f6..23adfe0 100644
+--- a/home/razen.nix
++++ b/home/razen.nix
+@@ -18,13 +18,14 @@
+         kdePackages.kate
+         vscode
+         firefox
++        discord
+ 
+         # Hyprland essentials & Wayland tools
+         kitty           # Terminal
+         rofi            # App launcher
+         # waybar        # Ya no la necesitas si usas la barra de serpantinum
+-        dunst           # Notifications daemon
+-        hyprpaper       # Wallpaper manager
++        # dunst         # Not needed - Serpantinum's Quickshell shell has its own notification popups
++        # hyprpaper     # Not needed - Serpantinum has its own built-in wallpaper engine (would fight over the background layer)
+ 
+         # Screenshot tools
+         grim            # Grab screen pixels
+@@ -36,12 +37,25 @@
+         quickshell.packages.${pkgs.system}.default
+ 
+         zen-browser.packages.${pkgs.system}.default
++
++        # Audio management - lets you pick mic/output devices per-app (Discord etc.)
++        pavucontrol     # GUI mixer/device picker
++        easyeffects     # Mic noise suppression, useful for voice calls
++
++        # eduroam CAT installer (cat.eduroam.org) needs these Python bindings to talk to
++        # NetworkManager over dbus - without dbus-python it falls back to writing your
++        # password in plaintext to a wpa_supplicant file, which we want to avoid
++        (python3.withPackages (ps: [ ps.pygobject3 ps.dbus-python ]))
++        gobject-introspection
++        gtk3
+     ];
+ 
+   xdg.configFile = {
+     "hypr".source = ./config/hypr;
+     "rofi".source = ./config/rofi;
+-    "kitty".source = ./config/kitty;
++    # Only symlink kitty.conf itself (not the whole directory) - Matugen needs to write
++    # colors.conf into ~/.config/kitty/ at runtime, which it can't do if the dir is read-only
++    "kitty/kitty.conf".source = ./config/kitty/kitty.conf;
+   };
+ 
+   # ============================================================================
+@@ -52,7 +66,7 @@
+     systemd.enable = true; # Arranca automáticamente con tu sesión de usuario
+ 
+     settings = {
+-      wallpaperDir = "/home/razen/Pictures/Wallpapers";
++      wallpaperDir = "/home/razen/Imágenes/Wallpapers";
+ 
+       general = {
+         language = "es";
+@@ -61,7 +75,7 @@
+ 
+       bar = {
+         position = "top";
+-        style = "islands";
++        style = "modular";
+         width = 40;
+         workspaceCount = 10;
+         modules = {
