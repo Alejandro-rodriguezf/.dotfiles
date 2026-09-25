@@ -48,6 +48,19 @@
         (python3.withPackages (ps: [ ps.pygobject3 ps.dbus-python ]))
         gobject-introspection
         gtk3
+
+        # Archive handling
+        unzip
+
+        # Nautilus (GNOME Files) - el gestor de archivos que usa el rice original de
+        # serpantinum. Solo está dentro del wrapper de serpantinum por defecto (no en tu
+        # PATH normal); lo añadimos aquí para poder lanzarlo tú mismo con "nautilus".
+        # Sigues teniendo dolphin como $fileManager en SUPER+E - dímelo si quieres cambiarlo.
+        nautilus
+
+        # "open archivo.pdf" al estilo macOS - abre con la app gráfica por defecto (zathura
+        # para PDFs), en vez de tener que acordarte de "xdg-open"
+        (writeShellScriptBin "open" ''exec xdg-open "$@"'')
     ];
 
   xdg.configFile = {
@@ -92,6 +105,21 @@
       };
     };
   };
+
+  # ============================================================================
+  # PDF VIEWER
+  # ============================================================================
+  # zathura: ligero, controlable por teclado, encaja con el resto del setup (kitty/rofi).
+  # El módulo de Home Manager ya incluye el plugin de poppler para que abra PDFs sin más.
+  programs.zathura = {
+    enable = true;
+    options = {
+      selection-clipboard = "clipboard";
+    };
+  };
+
+  # Para que "xdg-open archivo.pdf" (o "open archivo.pdf") también abra zathura
+  xdg.mimeApps.defaultApplications."application/pdf" = "org.pwmt.zathura.desktop";
 
   # ============================================================================
   # GIT CONFIGURATION

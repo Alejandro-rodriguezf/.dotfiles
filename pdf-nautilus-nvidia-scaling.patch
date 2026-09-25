@@ -1,0 +1,66 @@
+diff --git a/home/config/hypr/hyprland.conf b/home/config/hypr/hyprland.conf
+index 810116c..bcbfa5e 100644
+--- a/home/config/hypr/hyprland.conf
++++ b/home/config/hypr/hyprland.conf
+@@ -1,3 +1,15 @@
++# Workaround para el monitor externo por HDMI que se queda en negro tras DPMS/inactividad
++# con NVIDIA + PRIME. Si esto no lo arregla del todo, quítalo (puede dar algo de tearing)
++env = WLR_DRM_NO_ATOMIC,1
++
++# Arregla el borroso + clics desalineados en apps X11/XWayland (Thonny, IntelliJ, etc.)
++# con la escala fraccional (1.25). TRADE-OFF conocido: puede desalinear ligeramente los
++# clics en submenús/popups de ALGUNAS apps X11 (no de las nativas de Wayland). Si notas
++# eso en otra app, dímelo y lo revisamos - se puede quitar con solo borrar este bloque.
++xwayland {
++    force_zero_scaling = true
++}
++
+ # Teclado en español
+ input {
+     kb_layout = es
+diff --git a/home/razen.nix b/home/razen.nix
+index 23adfe0..b8f9dbf 100644
+--- a/home/razen.nix
++++ b/home/razen.nix
+@@ -48,6 +48,19 @@
+         (python3.withPackages (ps: [ ps.pygobject3 ps.dbus-python ]))
+         gobject-introspection
+         gtk3
++
++        # Archive handling
++        unzip
++
++        # Nautilus (GNOME Files) - el gestor de archivos que usa el rice original de
++        # serpantinum. Solo está dentro del wrapper de serpantinum por defecto (no en tu
++        # PATH normal); lo añadimos aquí para poder lanzarlo tú mismo con "nautilus".
++        # Sigues teniendo dolphin como $fileManager en SUPER+E - dímelo si quieres cambiarlo.
++        nautilus
++
++        # "open archivo.pdf" al estilo macOS - abre con la app gráfica por defecto (zathura
++        # para PDFs), en vez de tener que acordarte de "xdg-open"
++        (writeShellScriptBin "open" ''exec xdg-open "$@"'')
+     ];
+ 
+   xdg.configFile = {
+@@ -93,6 +106,21 @@
+     };
+   };
+ 
++  # ============================================================================
++  # PDF VIEWER
++  # ============================================================================
++  # zathura: ligero, controlable por teclado, encaja con el resto del setup (kitty/rofi).
++  # El módulo de Home Manager ya incluye el plugin de poppler para que abra PDFs sin más.
++  programs.zathura = {
++    enable = true;
++    options = {
++      selection-clipboard = "clipboard";
++    };
++  };
++
++  # Para que "xdg-open archivo.pdf" (o "open archivo.pdf") también abra zathura
++  xdg.mimeApps.defaultApplications."application/pdf" = "org.pwmt.zathura.desktop";
++
+   # ============================================================================
+   # GIT CONFIGURATION
+   # ============================================================================
