@@ -17,6 +17,7 @@
     home.packages = with pkgs; [
         kdePackages.kate
         vscode
+        kdePackages.okular
         firefox
         discord
 
@@ -58,7 +59,7 @@
         # Sigues teniendo dolphin como $fileManager en SUPER+E - dímelo si quieres cambiarlo.
         nautilus
 
-        # "open archivo.pdf" al estilo macOS - abre con la app gráfica por defecto (zathura
+        # "open archivo.pdf" al estilo macOS - abre con la app gráfica por defecto (Okular
         # para PDFs), en vez de tener que acordarte de "xdg-open"
         (writeShellScriptBin "open" ''exec xdg-open "$@"'')
     ];
@@ -109,17 +110,12 @@
   # ============================================================================
   # PDF VIEWER
   # ============================================================================
-  # zathura: ligero, controlable por teclado, encaja con el resto del setup (kitty/rofi).
-  # El módulo de Home Manager ya incluye el plugin de poppler para que abra PDFs sin más.
-  programs.zathura = {
-    enable = true;
-    options = {
-      selection-clipboard = "clipboard";
-    };
-  };
+  # Okular: visor de PDFs gráfico de KDE (cómodo con ratón, anotaciones, etc.)
 
-  # Para que "xdg-open archivo.pdf" (o "open archivo.pdf") también abra zathura
-  xdg.mimeApps.defaultApplications."application/pdf" = "org.pwmt.zathura.desktop";
+  # Para que "xdg-open archivo.pdf" (o "open archivo.pdf") abra Okular.
+  # Si prefieres abrirlos con el navegador, cambia esto por el .desktop de Zen
+  # (búscalo con: ls /etc/profiles/per-user/razen/share/applications | grep -i zen)
+  xdg.mimeApps.defaultApplications."application/pdf" = "org.kde.okular.desktop";
 
   # ============================================================================
   # GIT CONFIGURATION

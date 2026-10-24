@@ -182,6 +182,11 @@ in
   # bluetooth/networkmanager/pipewire defaults, Iosevka Nerd Font for the shell icons)
   programs.serpantinum.enable = true;
 
+  # Permite ejecutar binarios "genéricos de Linux" descargados por programas externos
+  # (p. ej. el servidor de Gradle de las extensiones de Java de VS Code), que NixOS
+  # no ejecuta de serie ("NixOS cannot run dynamically linked executables...")
+  programs.nix-ld.enable = true;
+
   environment.systemPackages = with pkgs; [
     git
     os-prober
