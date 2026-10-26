@@ -115,7 +115,7 @@
   # Para que "xdg-open archivo.pdf" (o "open archivo.pdf") abra Okular.
   # Si prefieres abrirlos con el navegador, cambia esto por el .desktop de Zen
   # (búscalo con: ls /etc/profiles/per-user/razen/share/applications | grep -i zen)
-  xdg.mimeApps.defaultApplications."application/pdf" = "org.kde.okular.desktop";
+  xdg.mimeApps.defaultApplications."application/pdf" = "zen-beta.desktop";
 
   # ============================================================================
   # GIT CONFIGURATION
