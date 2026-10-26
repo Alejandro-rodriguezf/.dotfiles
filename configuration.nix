@@ -79,7 +79,7 @@ in
   users.users."razen" = {
     isNormalUser = true;
     description = "Alex";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "vboxusers" ]
   };
 
   # ============================================================================
@@ -132,6 +132,14 @@ in
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+  };
+
+  # ============================================================================
+  # VIRTUALIZATION & VIRTUALBOX
+  # ============================================================================
+  virtualisation.virtualbox.host = {
+    enable = true;
+    enableExtensionPack = true;
   };
 
   # ============================================================================
