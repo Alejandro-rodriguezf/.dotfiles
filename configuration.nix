@@ -79,7 +79,7 @@ in
   users.users."razen" = {
     isNormalUser = true;
     description = "Alex";
-    extraGroups = [ "networkmanager" "wheel" "vboxusers" ]
+    extraGroups = [ "networkmanager" "wheel" "vboxusers" ];
   };
 
   # ============================================================================
